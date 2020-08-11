@@ -5,13 +5,14 @@ import (
 	"errors"
 	"image"
 	"image/color"
-	"image/png"
 	"io"
+
+	"github.com/Hades32/height-map/pkg/log"
 )
 
 const sampleSize = 1201
 
-func Convert(r io.Reader, w io.Writer) error {
+func Convert(r io.Reader) (*image.Gray16, error) {
 	img := image.NewGray16(image.Rect(0, 0, sampleSize, sampleSize))
 	scanner := bufio.NewScanner(r)
 	scanner.Split(HeightData)
@@ -21,17 +22,18 @@ func Convert(r io.Reader, w io.Writer) error {
 		x := i % sampleSize
 		y := i / sampleSize
 		b := scanner.Bytes()
-		height := NormalizedHeight(b)*32
+		height := NormalizedHeight(b) * 32
 		if height != 0 {
-			height += 0xFFFF/10
+			height += 0xFFFF / 10
 		}
 		img.SetGray16(x, y, color.Gray16{Y: height})
 		i++
 	}
 	if scanner.Err() != nil {
-		return scanner.Err()
+		return nil, scanner.Err()
 	}
-	return png.Encode(w, img)
+	log.Debugfln("Converted %d samples", i)
+	return img, nil
 }
 
 func NormalizedHeight(b []byte) uint16 {

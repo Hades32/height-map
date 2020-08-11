@@ -13,17 +13,9 @@ func TestConvert(t *testing.T) {
 		heightData, err := os.Open("testdata/" + file + ".hgt")
 		assert.NoError(t, err)
 		defer heightData.Close()
-		heightImage, err := os.Create("testout/" + file + ".png")
-		assert.NoError(t, err)
-		defer heightImage.Close()
-		err = Convert(heightData, heightImage)
+		_, _ = Convert(heightData)
 		assert.NoError(t, err)
 	}
-}
-
-func TestMain(m *testing.M) {
-	_ = os.Mkdir("./testout", 0640)
-	os.Exit(m.Run())
 }
 
 func TestBigEndianSignedInt16(t *testing.T) {

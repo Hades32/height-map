@@ -3,17 +3,22 @@ package main
 import (
 	"flag"
 	"fmt"
+	"image"
+	"image/png"
 	"os"
 
-	"github.com/Hades32/height-map"
+	"github.com/Hades32/height-map/pkg/height-map"
+	"github.com/Hades32/height-map/pkg/log"
 
+	"github.com/disintegration/gift"
 	"github.com/itzg/go-flagsfiller"
 )
 
 type Config struct {
 	In           string `usage:"The .hgt file to convert"`
 	Out          string `usage:"The image file to create (only supports png at the moment)"`
-	DebugEnabled bool   `default:"true" usage:"Show debug information"`
+	AutoImprove  bool   `default:"false" usage:"Will try to auto improve the image"`
+	DebugEnabled bool   `default:"false" usage:"Show debug information"`
 }
 
 func main() {
@@ -29,9 +34,22 @@ func main() {
 		fmt.Println("Couldn't create output file", err)
 		os.Exit(1)
 	}
-	err = heightmap.Convert(heightData, imageFile)
+	var img image.Image
+	img, err = heightmap.Convert(heightData)
 	if err != nil {
 		fmt.Println("Couldn't convert file", err)
+		os.Exit(1)
+	}
+	if config.AutoImprove {
+		g := gift.New(gift.Contrast(30))
+		dst := image.NewRGBA(g.Bounds(img.Bounds()))
+		g.Draw(dst, img)
+		img = dst
+	}
+
+	err = png.Encode(imageFile, img)
+	if err != nil {
+		fmt.Println("Couldn't write output file", err)
 		os.Exit(1)
 	}
 }
@@ -52,5 +70,8 @@ func parseArguments() Config {
 		flag.Usage()
 		os.Exit(1)
 	}
+
+	log.DebugEnabled = config.DebugEnabled
+
 	return config
 }

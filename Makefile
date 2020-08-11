@@ -1,9 +1,8 @@
 .PHONY: build
 
 build: outdir
-	cd cmd/convert-hgt &&\
-	go build && \
-	mv convert-hgt* ../../build/
+	go build -o convert-hgt$(go env GOEXE) && \
+	mv -f convert-hgt* ./build/
 
 outdir:
 	mkdir -p build
