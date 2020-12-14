@@ -3,3 +3,4 @@ testout
 *.iml
 *.exe
 /build
+/height-map
